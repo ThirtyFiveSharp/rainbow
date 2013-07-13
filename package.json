@@ -3,13 +3,16 @@
     "version":"0.0.0",
     "description":"rainbow =======",
     "main":"main.js",
-    "dependencies":{},
+    "dependencies":{
+        "compound": "*"
+    },
     "devDependencies":{
         "mocha":"*",
         "should":"*",
         "grunt": "*",
         "grunt-cli": "*",
-        "grunt-mocha-test": "*"
+        "grunt-mocha-test": "*",
+        "grunt-contrib-jshint": "*"
     },
     "scripts":{
         "test":"./node_modules/grunt-cli/bin/grunt test"
