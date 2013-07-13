@@ -3,17 +3,17 @@ module.exports = function(grunt) {
         mochaTest: {
             test: {
                 options: {
-                    require: 'should',
+                    require: 'test/init.js',
                     timeout: 3000,
                     ignoreLeaks: false,
                     ui: 'bdd',
                     reporter: 'spec'
                 },
-                src: ['test/**/*.js']
+                src: ['test/**/*.spec.js']
             }
         },
         jshint: {
-            all: ['Gruntfile.js', 'test/**/*.js']
+            all: ['Gruntfile.js', 'server.js', 'app/**/*.js', 'test/**/*.js']
         }
     });
 
