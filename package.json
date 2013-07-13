@@ -3,8 +3,13 @@
     "version":"0.0.0",
     "description":"rainbow =======",
     "main":"main.js",
+    "dependencies":{},
+    "devDependencies":{
+        "mocha":"*",
+        "should":"*"
+    },
     "scripts":{
-        "test":"echo 'Test'; exit 0"
+        "test":"./node_modules/mocha/bin/mocha --require should --ui bdd"
     },
     "repository":{
         "type":"git",
