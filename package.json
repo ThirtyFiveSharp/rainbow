@@ -6,10 +6,13 @@
     "dependencies":{},
     "devDependencies":{
         "mocha":"*",
-        "should":"*"
+        "should":"*",
+        "grunt": "*",
+        "grunt-cli": "*",
+        "grunt-mocha-test": "*"
     },
     "scripts":{
-        "test":"./node_modules/mocha/bin/mocha --require should --ui bdd"
+        "test":"./node_modules/grunt-cli/bin/grunt test"
     },
     "repository":{
         "type":"git",
