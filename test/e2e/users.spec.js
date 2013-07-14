@@ -10,16 +10,19 @@ describe('users', function () {
     });
 
     describe('get /users/:id', function() {
-        var uuid = require('node-uuid');
+        var uuid = require('node-uuid'),
+            timestamp = 'timestamp',
+            token = 'token',
+            nonce = 'nonce',
+            echoStr = uuid.v4();
 
-        it('should contain echostr in response', function (done) {
-            var echoStr = uuid.v4();
+        it('should verify request and send back echostr given correct signature', function (done) {
             request(app)
                 .get('/users/' + uuid.v4())
                 .query({
-                    signature: '',
-                    timestamp: '',
-                    nonce: '',
+                    signature: createSha1Content(token, timestamp, nonce),
+                    timestamp: timestamp,
+                    nonce: nonce,
                     echostr: echoStr
                 })
                 .end(function (err, res) {
@@ -28,5 +31,31 @@ describe('users', function () {
                     done();
                 });
         });
+
+        it('should return 400 Bad Request given incorrect signature', function (done) {
+            request(app)
+                .get('/users/' + uuid.v4())
+                .query({
+                    signature: 'any',
+                    timestamp: timestamp,
+                    nonce: nonce,
+                    echostr: echoStr
+                })
+                .end(function (err, res) {
+                    res.should.have.status(400);
+                    done();
+                });
+        });
+
+        function createSha1Content(token, timestamp, nonce) {
+            var crypto = require('crypto'),
+                shasum = crypto.createHash('sha1');
+            var array = [token, timestamp, nonce];
+            array.sort();
+            shasum.update(array[0]);
+            shasum.update(array[1]);
+            shasum.update(array[2]);
+            return shasum.digest('hex');
+        }
     });
 });
