@@ -67,4 +67,20 @@ describe('users', function () {
                 .expect(201, done);
         });
     });
+
+    describe('get /users/:id', function () {
+        it('should return specific user information', function (done) {
+            var uuid = require('node-uuid'),
+                User = app.models.User;
+            User.create({
+                id: uuid.v4(),
+                token: uuid.v4()
+            }, function(err, user) {
+                request(app)
+                    .get('/users/' + user.id)
+                    .expect('Content-Type', 'application/json')
+                    .expect(200, {id: user.id, token: user.token}, done);
+            });
+        });
+    });
 });

@@ -15,7 +15,10 @@ action('verify', function () {
 });
 
 action('show', function () {
-    send(200);
+    User.find(context.req.params.id, function(err, user) {
+        context.res.header('Content-Type', 'application/json');
+        send({id: user.id, token: user.token});
+    });
 });
 
 action('create', function () {
