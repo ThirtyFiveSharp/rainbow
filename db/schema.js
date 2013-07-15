@@ -21,3 +21,7 @@
 
 */
 
+var User = describe('User', function () {
+    property('id', String, { index: true });
+    property('token', String);
+});

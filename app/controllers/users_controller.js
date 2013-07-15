@@ -7,21 +7,27 @@ action('verify', function () {
         nonce = query.nonce,
         echoStr = query.echostr;
     var expectedSignature = createSha1Content('token', timestamp, nonce);
-    if(signature == expectedSignature) {
+    if (signature == expectedSignature) {
         send(echoStr);
     } else {
         send(400);
     }
 });
 
-action('show', function() {
-   send(200);
+action('show', function () {
+    send(200);
 });
 
-action('create', function() {
+action('create', function () {
     var uuid = require('node-uuid');
-    context.res.header('location', path_to.user(uuid.v4()));
-    send(201);
+    var user = {
+        id: uuid.v4(),
+        token: uuid.v4()
+    };
+    User.create(user, function (err, user) {
+        context.res.header('location', path_to.user(user.id));
+        send(201);
+    });
 });
 
 function createSha1Content(token, timestamp, nonce) {

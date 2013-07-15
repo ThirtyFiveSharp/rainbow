@@ -60,7 +60,7 @@ describe('users', function () {
     });
 
     describe('post /users', function () {
-        it('should return created user uri', function (done) {
+        it('should create user and return created user uri', function (done) {
             request(app)
                 .post('/users')
                 .expect('location', /\/users\/[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}/)
