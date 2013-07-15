@@ -3,6 +3,14 @@
     "version": "0.0.1",
     "engines": ["node >= 0.8.0"],
     "main": "server.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ThirtyFiveSharp/rainbow.git"
+    },
+    "author": "ThirtyFiveSharp",
+    "license": "BSD",
+    "readmeFilename": "README.md",
+    "gitHead": "b15fc480faed7f522254f69476d7922bfaabb551",
     "dependencies": {
         "ejs": "*",
         "ejs-ext": "latest",
@@ -27,7 +35,8 @@
         "grunt-cli": "*",
         "grunt-mocha-test": "*",
         "grunt-contrib-jshint": "*"
-    }, "scripts": {
-    "test": "./node_modules/.bin/grunt test"
-}
+    },
+    "scripts": {
+        "test": "./node_modules/.bin/grunt test"
+    }
 }
