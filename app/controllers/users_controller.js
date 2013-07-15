@@ -15,9 +15,18 @@ action('verify', function () {
 });
 
 action('show', function () {
-    User.find(context.req.params.id, function(err, user) {
+    User.find(context.req.params.id, function (err, user) {
+        if(!user) {
+           return send(404);
+        }
         context.res.header('Content-Type', 'application/json');
-        send({id: user.id, token: user.token});
+        return send({
+            id: user.id,
+            token: user.token,
+            links: [
+                {rel: 'verify', href: path_to.verify_user(user.id)}
+            ]
+        });
     });
 });
 

@@ -69,9 +69,10 @@ describe('users', function () {
     });
 
     describe('get /users/:id', function () {
+        var uuid = require('node-uuid');
+
         it('should return specific user information', function (done) {
-            var uuid = require('node-uuid'),
-                User = app.models.User;
+            var User = app.models.User;
             User.create({
                 id: uuid.v4(),
                 token: uuid.v4()
@@ -79,8 +80,20 @@ describe('users', function () {
                 request(app)
                     .get('/users/' + user.id)
                     .expect('Content-Type', 'application/json')
-                    .expect(200, {id: user.id, token: user.token}, done);
+                    .expect(200, {
+                        id: user.id,
+                        token: user.token,
+                        links: [
+                            {rel: 'verify', href: '/users/' + user.id + '/verify'}
+                        ]
+                    }, done);
             });
+        });
+
+        it('should return 404 not found when user not exists', function(done) {
+           request(app)
+               .get('/users/' + uuid.v4())
+               .expect(404, done);
         });
     });
 });
