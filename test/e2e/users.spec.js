@@ -9,7 +9,7 @@ describe('users', function () {
         });
     });
 
-    describe('get /users/:id', function() {
+    describe('get /users/:id', function () {
         var uuid = require('node-uuid'),
             timestamp = 'timestamp',
             token = 'token',
@@ -57,5 +57,14 @@ describe('users', function () {
             shasum.update(array[2]);
             return shasum.digest('hex');
         }
+    });
+
+    describe('post /users', function () {
+        it('should return created user uri', function (done) {
+            request(app)
+                .post('/users')
+                .expect('location', /\/users\/[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}/)
+                .expect(201, done);
+        });
     });
 });

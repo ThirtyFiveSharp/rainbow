@@ -14,6 +14,12 @@ action('joinup', function () {
     }
 });
 
+action('create', function() {
+    var uuid = require('node-uuid');
+    context.res.header('location', path_to.user(uuid.v4()));
+    send(201);
+});
+
 function createSha1Content(token, timestamp, nonce) {
     var crypto = require('crypto'),
         shasum = crypto.createHash('sha1');

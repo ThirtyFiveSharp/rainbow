@@ -3,6 +3,7 @@ exports.routes = function (map) {
     // feel free to remove generic routes
     map.root('index#get');
     map.get('/users/:id', 'users#joinup');
+    map.post('/users', 'users#create');
 //    map.all(':controller/:action');
 //    map.all(':controller/:action/:id');
 };
