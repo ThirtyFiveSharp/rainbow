@@ -1,6 +1,6 @@
 load('application');
 
-action('joinup', function () {
+action('verify', function () {
     var query = context.req.query,
         signature = query.signature,
         timestamp = query.timestamp,
@@ -12,6 +12,10 @@ action('joinup', function () {
     } else {
         send(400);
     }
+});
+
+action('show', function() {
+   send(200);
 });
 
 action('create', function() {

@@ -9,7 +9,7 @@ describe('users', function () {
         });
     });
 
-    describe('get /users/:id', function () {
+    describe('get /users/:id/verify', function () {
         var uuid = require('node-uuid'),
             timestamp = 'timestamp',
             token = 'token',
@@ -18,7 +18,7 @@ describe('users', function () {
 
         it('should verify request and send back echostr given correct signature', function (done) {
             request(app)
-                .get('/users/' + uuid.v4())
+                .get('/users/' + uuid.v4() + '/verify')
                 .query({
                     signature: createSha1Content(token, timestamp, nonce),
                     timestamp: timestamp,
@@ -34,7 +34,7 @@ describe('users', function () {
 
         it('should return 400 Bad Request given incorrect signature', function (done) {
             request(app)
-                .get('/users/' + uuid.v4())
+                .get('/users/' + uuid.v4() + '/verify')
                 .query({
                     signature: 'any',
                     timestamp: timestamp,
