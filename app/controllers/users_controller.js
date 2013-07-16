@@ -20,7 +20,7 @@ action('create', function () {
     var uuid = require('node-uuid');
     var user = {
         id: uuid.v4(),
-        token: uuid.v4()
+        token: uuid.v4().replace(/-/g, '')
     };
     User.create(user, function (err, user) {
         context.res.header('location', path_to.user(user.id));

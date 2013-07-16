@@ -25,7 +25,7 @@ describe('users', function () {
             var User = app.models.User;
             User.create({
                 id: uuid.v4(),
-                token: uuid.v4()
+                token: uuid.v4().replace(/-/g, '')
             }, function(err, user) {
                 request(app)
                     .get('/users/' + user.id)
