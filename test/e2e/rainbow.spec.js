@@ -1,6 +1,6 @@
-var request = require('supertest'), app, compound;
-
 describe('rainbow', function () {
+    var request = require('supertest'), app, compound;
+
     beforeEach(function (done) {
         app = getApp();
         compound = app.compound;
@@ -17,34 +17,46 @@ describe('rainbow', function () {
             echoStr = uuid.v4();
 
         it('should verify request and send back echostr given correct signature', function (done) {
-            request(app)
-                .get('/rainbow/' + uuid.v4())
-                .query({
-                    signature: createSha1Content(token, timestamp, nonce),
-                    timestamp: timestamp,
-                    nonce: nonce,
-                    echostr: echoStr
-                })
-                .end(function (err, res) {
-                    res.should.have.status(200);
-                    res.text.should.equal(echoStr);
-                    done();
-                });
+            var User = app.models.User;
+            User.create({
+                id: uuid.v4(),
+                token: uuid.v4()
+            }, function (err, user) {
+                request(app)
+                    .get('/rainbow/' + user.id)
+                    .query({
+                        signature: createSha1Content(user.token, timestamp, nonce),
+                        timestamp: timestamp,
+                        nonce: nonce,
+                        echostr: echoStr
+                    })
+                    .expect(200, echoStr, done);
+            });
+
         });
 
         it('should return 400 Bad Request given incorrect signature', function (done) {
+            var User = app.models.User;
+            User.create({
+                id: uuid.v4(),
+                token: uuid.v4()
+            }, function (err, user) {
+                request(app)
+                    .get('/rainbow/' + user.id)
+                    .query({
+                        signature: 'any',
+                        timestamp: timestamp,
+                        nonce: nonce,
+                        echostr: echoStr
+                    })
+                    .expect(400, done);
+            });
+        });
+
+        it('should return 404 Not Found when user of given id not exist', function (done) {
             request(app)
                 .get('/rainbow/' + uuid.v4())
-                .query({
-                    signature: 'any',
-                    timestamp: timestamp,
-                    nonce: nonce,
-                    echostr: echoStr
-                })
-                .end(function (err, res) {
-                    res.should.have.status(400);
-                    done();
-                });
+                .expect(404, done);
         });
 
         function createSha1Content(token, timestamp, nonce) {

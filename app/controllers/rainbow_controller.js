@@ -1,17 +1,22 @@
 load('application');
 
 action('joinup', function () {
-    var query = context.req.query,
-        signature = query.signature,
-        timestamp = query.timestamp,
-        nonce = query.nonce,
-        echoStr = query.echostr;
-    var expectedSignature = createSha1Content('token', timestamp, nonce);
-    if (signature == expectedSignature) {
-        send(echoStr);
-    } else {
-        send(400);
-    }
+    User.find(context.req.params.id, function (err, user) {
+        if(!user) {
+            return send(404);
+        }
+        var query = context.req.query,
+            signature = query.signature,
+            timestamp = query.timestamp,
+            nonce = query.nonce,
+            echoStr = query.echostr;
+        var expectedSignature = createSha1Content(user.token, timestamp, nonce);
+        if (signature == expectedSignature) {
+            send(echoStr);
+        } else {
+            send(400);
+        }
+    });
 });
 
 function createSha1Content(token, timestamp, nonce) {
