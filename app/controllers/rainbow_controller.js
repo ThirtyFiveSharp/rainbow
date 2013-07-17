@@ -2,7 +2,7 @@ load('application');
 
 action('joinup', function () {
     User.find(context.req.params.id, function (err, user) {
-        if(!user) {
+        if (!user) {
             return send(404);
         }
         var query = context.req.query,
@@ -16,6 +16,22 @@ action('joinup', function () {
         } else {
             send(400);
         }
+    });
+});
+
+action('process', function () {
+    User.find(context.req.params.id, function (err, user) {
+        var reqBody = req.body.xml;
+        var body = "<xml>" +
+            "<ToUserName><![CDATA[" + reqBody.FromUser + "]]></ToUserName>" +
+            "<FromUserName><![CDATA[" + reqBody.ToUser + "]]></FromUserName>" +
+            "<CreateTime>" + reqBody.CreateTime + "</CreateTime>" +
+            "<MsgType><![CDATA[" + reqBody.Content + "]]></MsgType>" +
+            "<Content><![CDATA[this is a test]]></Content>" +
+            "<FuncFlag>0</FuncFlag>" +
+            "</xml>";
+        context.res.header('Content-Type', 'application/xml');
+        return send(body);
     });
 });
 

@@ -21,7 +21,8 @@
         "stylus": "latest",
         "seedjs": "latest",
         "co-assets-compiler": "*",
-        "node-uuid": "*"
+        "node-uuid": "*",
+        "xml2js": "*"
     },
     "devDependencies": {
         "nodeunit": "*",
