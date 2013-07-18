@@ -22,16 +22,16 @@ action('joinup', function () {
 action('process', function () {
     User.find(context.req.params.id, function (err, user) {
         var reqBody = req.body.xml;
-        var body = "<xml>" +
-            "<ToUserName><![CDATA[" + reqBody.FromUser + "]]></ToUserName>" +
-            "<FromUserName><![CDATA[" + reqBody.ToUser + "]]></FromUserName>" +
-            "<CreateTime>" + reqBody.CreateTime + "</CreateTime>" +
-            "<MsgType><![CDATA[" + reqBody.Content + "]]></MsgType>" +
-            "<Content><![CDATA[this is a test]]></Content>" +
-            "<FuncFlag>0</FuncFlag>" +
-            "</xml>";
+        var result = {
+            to: reqBody.FromUserName[0],
+            from: reqBody.ToUserName[0],
+            createTime: reqBody.CreateTime[0],
+            type: 'text',
+            content: reqBody.Content[0],
+            flag: 0
+        };
         context.res.header('Content-Type', 'application/xml');
-        return send(body);
+        render(result);
     });
 });
 

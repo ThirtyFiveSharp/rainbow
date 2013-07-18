@@ -40,6 +40,7 @@ module.exports = function (compound) {
         app.set('jsDirectory', '/javascripts/');
         app.set('cssDirectory', '/stylesheets/');
         app.set('cssEngine', 'stylus');
+        app.set('view options', {layout: false});
         app.use(express.bodyParser());
         app.use(xmlBodyParser);
         app.use(express.cookieParser('secret'));
