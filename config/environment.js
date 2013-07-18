@@ -12,7 +12,7 @@ module.exports = function (compound) {
         if ('GET' == req.method || 'HEAD' == req.method) return next();
 
         // check Content-Type
-        if (!req.is('application/xml')) return next();
+        if (!req.is('text/xml')) return next();
 
         // flag as parsed
         req._body = true;

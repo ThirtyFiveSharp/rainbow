@@ -30,7 +30,7 @@ action('process', function () {
             content: reqBody.Content[0],
             flag: 0
         };
-        context.res.header('Content-Type', 'application/xml');
+        context.res.header('Content-Type', 'text/xml');
         render(result);
     });
 });
