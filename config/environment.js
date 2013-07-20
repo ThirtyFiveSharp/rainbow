@@ -33,7 +33,7 @@ module.exports = function (compound) {
                 }
             });
         });
-    };
+    }
 
     app.configure(function(){
         app.use(express.static(app.root + '/public', { maxAge: 86400000 }));

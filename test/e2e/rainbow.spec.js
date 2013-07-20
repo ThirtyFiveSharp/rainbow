@@ -72,23 +72,23 @@ describe('rainbow', function () {
     });
 
     describe('post /rainbow/:id', function () {
-        xit('should handle request', function (done) {
+        it('should handle request', function (done) {
             var uuid = require('node-uuid');
             var User = app.models.User;
             var requestBody = "<xml>" +
-                    "<ToUserName><![CDATA[toUser]]></ToUserName>" +
-                    "<FromUserName><![CDATA[fromUser]]></FromUserName>" +
+                    "<ToUserName><![CDATA[server]]></ToUserName>" +
+                    "<FromUserName><![CDATA[client]]></FromUserName>" +
                     "<CreateTime>1348831860</CreateTime>" +
                     "<MsgType><![CDATA[text]]></MsgType>" +
-                    "<Content><![CDATA[this is a test]]></Content>" +
+                    "<Content><![CDATA[this_is_a_test]]></Content>" +
                     "<MsgId>1234567890123456</MsgId>" +
                     "</xml>",
-                expectResponseBody = "<xml>" +
-                    "<ToUserName><![CDATA[toUser]]></ToUserName>" +
-                    "<FromUserName><![CDATA[fromUser]]></FromUserName>" +
-                    "<CreateTime>1348832860</CreateTime>" +
+                expectedResponseBody = "<xml>" +
+                    "<ToUserName><![CDATA[client]]></ToUserName>" +
+                    "<FromUserName><![CDATA[server]]></FromUserName>" +
+                    "<CreateTime>1348831860</CreateTime>" +
                     "<MsgType><![CDATA[text]]></MsgType>" +
-                    "<Content><![CDATA[this is a test]]></Content>" +
+                    "<Content><![CDATA[this_is_a_test]]></Content>" +
                     "<FuncFlag>0</FuncFlag>" +
                     "</xml>";
             User.create({
@@ -97,10 +97,15 @@ describe('rainbow', function () {
             }, function (err, user) {
                 request(app)
                     .post('/rainbow/' + user.id)
-                    .set('Content-Type', 'application/xml')
+                    .set('Content-Type', 'text/xml')
                     .send(requestBody)
-                    .expect('Content-Type', 'application/xml')
-                    .expect(200, expectResponseBody, done);
+                    .expect('Content-Type', 'text/xml')
+                    .expect(200)
+                    .end(function(err, res) {
+                        if(err) throw err;
+                        res.text.replace(/\s*/g, '').should.equal(expectedResponseBody);
+                        done();
+                    });
             });
         });
     });
