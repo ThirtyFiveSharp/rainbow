@@ -25,7 +25,8 @@
     "co-assets-compiler": "*",
     "node-uuid": "*",
     "xml2js": "*",
-    "jugglingdb-mongodb": "0.0.4-3"
+    "jugglingdb-mongodb": "0.0.4-3",
+    "q": "~0.9.6"
   },
   "devDependencies": {
     "nodeunit": "*",
