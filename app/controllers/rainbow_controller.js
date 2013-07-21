@@ -12,7 +12,7 @@ action('joinup', function () {
 action('process', function () {
     User.findByKey(context.req.params.key)
         .then(authenticateSignature)
-        .spread(buildResponseMessage, return404NotFound)
+        .then(buildResponseMessageForWeChat, return404NotFound)
         .done();
 });
 
@@ -24,8 +24,7 @@ function authenticateSignature (user) {
         timestamp = query.timestamp,
         nonce = query.nonce;
     if (!user || !isSignatureValid(signature, secret, timestamp, nonce)) deferred.reject();
-    else deferred.resolve([user, context.req.body.xml]);
-
+    else deferred.resolve(user);
     return deferred.promise;
 }
 
@@ -52,40 +51,42 @@ function return404NotFound() {
     send(404);
 }
 
-function buildResponseMessage(user, xml) {
-    var sender = xml.FromUserName[0],
-        receiver = xml.ToUserName[0];
-    return Message.countBySender(sender, user.id)
-        .then(function(numberOfReceivedMessages) {
+function buildResponseMessageForWeChat(user) {
+    var xml = context.req.body.xml,
+        sender = xml.FromUserName[0],
+        receiver = xml.ToUserName[0],
+        receivedMessage = {
+            userId: user.id,
+            sender: sender,
+            receiver: receiver,
+            content: xml.Content[0]
+        };
+    return Message.createNew(receivedMessage)
+        .then(generateResponseContent)
+        .then(function createResponseMessage(responseContent) {
             var responseBody = {
                     to: sender,
                     from: receiver,
                     createTime: xml.CreateTime[0],
                     type: 'text',
-                    content: buildResponseContent(xml.Content[0], numberOfReceivedMessages),
+                    content: responseContent,
                     flag: 0
                 },
-                receivedMessage = {
-                    userId: user.id,
-                    sender: sender,
-                    receiver: receiver,
-                    rawContent: xml
-                },
-                repliedMessage = {
+                responseMessage = {
                     userId: user.id,
                     sender: receiver,
                     receiver: sender,
-                    rawContent: responseBody
+                    content: responseContent
                 };
             context.res.header('Content-Type', 'text/xml');
             render(responseBody);
-            return q.all(
-                Message.createNew(receivedMessage),
-                Message.createNew(repliedMessage)
-            );
+            return Message.createNew(responseMessage);
         });
 }
 
-function buildResponseContent(originalContent, numberOfReceivedMessages) {
-    return originalContent + ' [You have sent '+ (numberOfReceivedMessages+1) + ' message(s).]';
+function generateResponseContent(receivedMessage) {
+    return Message.countBySender(receivedMessage.sender, receivedMessage.userId)
+        .then(function appendStatisticsInfo(count) {
+            return receivedMessage.content + ' [You have sent '+ count + ' message(s).]';
+        });
 }
