@@ -1,49 +1,33 @@
+var q = require('q');
+
 load('application');
 
 action('joinup', function () {
     User.findByKey(context.req.params.key)
-        .then(function echoStringInResponse(user) {
-            var query = context.req.query,
-                signature = query.signature,
-                secret = user && user.secret,
-                timestamp = query.timestamp,
-                nonce = query.nonce,
-                echoStr = query.echostr;
-            if (!user || !isSignatureValid(signature, secret, timestamp, nonce)) {
-                send(404);
-                return;
-            }
-            send(echoStr);
-        })
+        .then(authenticateSignature)
+        .then(returnEchoString, return404NotFound)
         .done();
 });
 
 action('process', function () {
     User.findByKey(context.req.params.key)
-        .then(function echoMessageInResponse(user) {
-            var query = context.req.query,
-                signature = query.signature,
-                secret = user && user.secret,
-                timestamp = query.timestamp,
-                nonce = query.nonce;
-            if (!user || !isSignatureValid(signature, secret, timestamp, nonce)) {
-                send(404);
-                return;
-            }
-            var reqBody = req.body.xml,
-                result = {
-                    to: reqBody.FromUserName[0],
-                    from: reqBody.ToUserName[0],
-                    createTime: reqBody.CreateTime[0],
-                    type: 'text',
-                    content: reqBody.Content[0],
-                    flag: 0
-                };
-            context.res.header('Content-Type', 'text/xml');
-            render(result);
-        })
+        .then(authenticateSignature)
+        .spread(buildResponseMessage, return404NotFound)
         .done();
 });
+
+function authenticateSignature (user) {
+    var deferred = q.defer(),
+        query = context.req.query,
+        signature = query.signature,
+        secret = user && user.secret,
+        timestamp = query.timestamp,
+        nonce = query.nonce;
+    if (!user || !isSignatureValid(signature, secret, timestamp, nonce)) deferred.reject();
+    else deferred.resolve([user, context.req.body.xml]);
+
+    return deferred.promise;
+}
 
 function isSignatureValid(signature, secret, timestamp, nonce) {
     return buildSignature(secret, timestamp, nonce) === signature;
@@ -58,4 +42,43 @@ function buildSignature(secret, timestamp, nonce) {
     shasum.update(array[1]);
     shasum.update(array[2]);
     return shasum.digest('hex');
+}
+
+function returnEchoString() {
+    send(context.req.query.echostr);
+}
+
+function return404NotFound() {
+    send(404);
+}
+
+function buildResponseMessage(user, xml) {
+    var sender = xml.FromUserName[0],
+        receiver = xml.ToUserName[0],
+        responseBody = {
+            to: sender,
+            from: receiver,
+            createTime: xml.CreateTime[0],
+            type: 'text',
+            content: xml.Content[0],
+            flag: 0
+        },
+        receivedMessage = {
+            userId: user.id,
+            sender: sender,
+            receiver: receiver,
+            rawContent: xml
+        },
+        repliedMessage = {
+            userId: user.id,
+            sender: receiver,
+            receiver: sender,
+            rawContent: responseBody
+        };
+    context.res.header('Content-Type', 'text/xml');
+    render(responseBody);
+    return q.all(
+        Message.createNew(receivedMessage),
+        Message.createNew(repliedMessage)
+    );
 }

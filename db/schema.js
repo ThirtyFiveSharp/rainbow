@@ -22,14 +22,10 @@
  */
 
 var Message = describe('Message', function() {
-    property('rawContent', String);
-    property('fromUser', String);
-    property('toUser', String);
-    property('type', String);
+    property('userId', String);
+    property('sender', String);
+    property('receiver', String);
     property('content', String);
-    property('createTime', {type: Date, default: function() {
-        return new Date();
-    }});
 });
 
 var User = describe('User', function () {

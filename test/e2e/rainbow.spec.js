@@ -97,6 +97,39 @@ describe('rainbow', function () {
             });
         });
 
+        it('should save the messages that has been received and replied', function (done) {
+            var User = app.models.User,
+                Message = app.models.Message,
+                requestBody = "<xml>" +
+                    "<ToUserName><![CDATA[server]]></ToUserName>" +
+                    "<FromUserName><![CDATA[client]]></FromUserName>" +
+                    "<CreateTime>1348831860</CreateTime>" +
+                    "<MsgType><![CDATA[text]]></MsgType>" +
+                    "<Content><![CDATA[messageFromClient]]></Content>" +
+                    "<MsgId>1234567890123456</MsgId>" +
+                    "</xml>";
+            Message.all(function(err, messages) {
+                var numberOfMessages = messages.length;
+                User.create({key: uuid.v4(), secret: uuid.v4()}, function (err, user) {
+                    request(app)
+                        .post('/rainbow/' + user.key)
+                        .query({
+                            signature: buildSignature(user.secret, givenTimestamp(), givenNonce()),
+                            timestamp: givenTimestamp(),
+                            nonce: givenNonce()
+                        })
+                        .set('Content-Type', 'text/xml')
+                        .send(requestBody)
+                        .end(function() {
+                            Message.all(function(err, messages) {
+                                messages.length.should.equal(numberOfMessages + 2);
+                                done();
+                            });
+                        });
+                });
+            });
+        });
+
         it('should return 404 Not Found given incorrect signature', function (done) {
             var requestBody = "<xml>" +
                 "<ToUserName><![CDATA[server]]></ToUserName>" +
