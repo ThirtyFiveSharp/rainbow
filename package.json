@@ -1,43 +1,46 @@
 {
-    "name": "rainbow",
-    "version": "0.0.1",
-    "engines": ["node >= 0.8.0"],
-    "main": "server.js",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/ThirtyFiveSharp/rainbow.git"
-    },
-    "author": "ThirtyFiveSharp",
-    "license": "BSD",
-    "readmeFilename": "README.md",
-    "gitHead": "b15fc480faed7f522254f69476d7922bfaabb551",
-    "dependencies": {
-        "ejs": "*",
-        "ejs-ext": "latest",
-        "express": "~3.x",
-        "compound": ">= 1.1.0",
-        "jugglingdb": ">= 0.1.0",
-        "coffee-script": ">= 1.1.1",
-        "stylus": "latest",
-        "seedjs": "latest",
-        "co-assets-compiler": "*",
-        "node-uuid": "*",
-        "xml2js": "*"
-    },
-    "devDependencies": {
-        "nodeunit": "*",
-        "sinon": "*",
-        "supertest": ">= 0",
-        "mocha": ">= 0",
-        "should": ">= 0",
-        "semicov": "*",
-        "co-generators": "*",
-        "grunt": "*",
-        "grunt-cli": "*",
-        "grunt-mocha-test": "*",
-        "grunt-contrib-jshint": "*"
-    },
-    "scripts": {
-        "test": "./node_modules/.bin/grunt test"
-    }
+  "name": "rainbow",
+  "version": "0.0.1",
+  "engines": [
+    "node >= 0.8.0"
+  ],
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ThirtyFiveSharp/rainbow.git"
+  },
+  "author": "ThirtyFiveSharp",
+  "license": "BSD",
+  "readmeFilename": "README.md",
+  "gitHead": "b15fc480faed7f522254f69476d7922bfaabb551",
+  "dependencies": {
+    "ejs": "*",
+    "ejs-ext": "latest",
+    "express": "~3.x",
+    "compound": ">= 1.1.0",
+    "jugglingdb": ">= 0.1.0",
+    "coffee-script": ">= 1.1.1",
+    "stylus": "latest",
+    "seedjs": "latest",
+    "co-assets-compiler": "*",
+    "node-uuid": "*",
+    "xml2js": "*",
+    "jugglingdb-mongodb": "0.0.4-3"
+  },
+  "devDependencies": {
+    "nodeunit": "*",
+    "sinon": "*",
+    "supertest": ">= 0",
+    "mocha": ">= 0",
+    "should": ">= 0",
+    "semicov": "*",
+    "co-generators": "*",
+    "grunt": "*",
+    "grunt-cli": "*",
+    "grunt-mocha-test": "*",
+    "grunt-contrib-jshint": "*"
+  },
+  "scripts": {
+    "test": "./node_modules/.bin/grunt test"
+  }
 }

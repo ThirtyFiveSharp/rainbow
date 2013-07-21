@@ -18,31 +18,31 @@ describe('users', function () {
         });
     });
 
-    describe('get /users/:id', function () {
+    describe('get /users/:key', function () {
         var uuid = require('node-uuid');
 
         it('should return specific user information', function (done) {
             var User = app.models.User;
             User.create({
-                id: uuid.v4(),
-                token: uuid.v4().replace(/-/g, '')
+                key: uuid.v4(),
+                secret: uuid.v4()
             }, function(err, user) {
                 request(app)
-                    .get('/users/' + user.id)
+                    .get('/users/' + user.key)
                     .expect('Content-Type', 'application/json')
                     .expect(200, {
-                        id: user.id,
-                        token: user.token,
+                        key: user.key,
+                        secret: user.secret,
                         links: [
-                            {rel: 'joinup', href: '/rainbow/' + user.id }
+                            {rel: 'joinup', href: '/rainbow/' + user.key}
                         ]
                     }, done);
             });
         });
 
-        it('should return 404 not found when user not exists', function(done) {
+        it('should return 404 not found given invalid user key', function(done) {
            request(app)
-               .get('/users/' + uuid.v4())
+               .get('/users/' + 'invalidUserKey')
                .expect(404, done);
         });
     });

@@ -1,11 +1,11 @@
 module.exports = 
   { "development":
-    { "driver":   "memory"
+    { "driver":   "MongoDB"
     }
   , "test":
     { "driver":   "memory"
     }
   , "production":
-    { "driver":   "memory"
+    { "driver":   "MongoDB"
     }
   };

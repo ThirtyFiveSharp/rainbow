@@ -1,15 +1,16 @@
 load('application');
 
 action('joinup', function () {
-    User.find(context.req.params.id, function (err, user) {
-        var query = context.req.query,
+    User.all({where: {key: context.req.params.key}, limit: 1}, function (err, users) {
+        var user = users.shift(),
+            query = context.req.query,
             signature = query.signature,
-            token = user && user.token,
+            secret = user && user.secret,
             timestamp = query.timestamp,
             nonce = query.nonce,
             echoStr = query.echostr;
 
-        if (!user || !isSignatureValid(signature, token, timestamp, nonce)) {
+        if (!user || !isSignatureValid(signature, secret, timestamp, nonce)) {
             send(404);
             return;
         }
@@ -18,13 +19,14 @@ action('joinup', function () {
 });
 
 action('process', function () {
-    User.find(context.req.params.id, function (err, user) {
-        var query = context.req.query,
+    User.all({where: {key: context.req.params.key}, limit: 1}, function (err, users) {
+        var user = users[0],
+            query = context.req.query,
             signature = query.signature,
-            token = user && user.token,
+            secret = user && user.secret,
             timestamp = query.timestamp,
             nonce = query.nonce;
-        if (!user || !isSignatureValid(signature, token, timestamp, nonce)) {
+        if (!user || !isSignatureValid(signature, secret, timestamp, nonce)) {
             send(404);
             return;
         }
@@ -43,13 +45,14 @@ action('process', function () {
     });
 });
 
-function isSignatureValid(signature, token, timestamp, nonce) {
-    return buildSignature(token, timestamp, nonce) === signature;
+function isSignatureValid(signature, secret, timestamp, nonce) {
+    return buildSignature(secret, timestamp, nonce) === signature;
 }
 
-function buildSignature(token, timestamp, nonce) {
+function buildSignature(secret, timestamp, nonce) {
     var crypto = require('crypto'),
         shasum = crypto.createHash('sha1'),
+        token = secret.replace('-', ''),
         array = [token, timestamp, nonce].sort();
     shasum.update(array[0]);
     shasum.update(array[1]);

@@ -1,16 +1,18 @@
 load('application');
 
 action('show', function () {
-    User.find(context.req.params.id, function (err, user) {
+    User.all({where: {key: context.req.params.key}, limit: 1}, function (err, users) {
+        var user = users[0];
+        console.log("user=", user);
         if(!user) {
            return send(404);
         }
         context.res.header('Content-Type', 'application/json');
         return send({
-            id: user.id,
-            token: user.token,
+            key: user.key,
+            secret: user.secret,
             links: [
-                {rel: 'joinup', href: path_to.rainbow(user.id)}
+                {rel: 'joinup', href: path_to.rainbow(user.key)}
             ]
         });
     });
@@ -19,11 +21,11 @@ action('show', function () {
 action('create', function () {
     var uuid = require('node-uuid');
     var user = {
-        id: uuid.v4(),
-        token: uuid.v4().replace(/-/g, '')
+        key: uuid.v4(),
+        secret: uuid.v4()
     };
     User.create(user, function (err, user) {
-        context.res.header('location', path_to.user(user.id));
+        context.res.header('location', path_to.user(user.key));
         send(201);
     });
 });

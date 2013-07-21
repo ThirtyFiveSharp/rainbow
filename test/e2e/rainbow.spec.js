@@ -10,17 +10,17 @@ describe('rainbow', function () {
         });
     });
 
-    describe('get /rainbow/:id', function () {
+    describe('get /rainbow/:key', function () {
         it('should verify request and send back echostr given correct signature', function (done) {
             var User = app.models.User;
             User.create({
-                id: uuid.v4(),
-                token: uuid.v4()
+                key: uuid.v4(),
+                secret: uuid.v4()
             }, function (err, user) {
                 request(app)
-                    .get('/rainbow/' + user.id)
+                    .get('/rainbow/' + user.key)
                     .query({
-                        signature: buildSignature(user.token, givenTimestamp(), givenNonce()),
+                        signature: buildSignature(user.secret, givenTimestamp(), givenNonce()),
                         timestamp: givenTimestamp(),
                         nonce: givenNonce(),
                         echostr: givenEchoStr()
@@ -33,11 +33,11 @@ describe('rainbow', function () {
         it('should return 404 Not Found given incorrect signature', function (done) {
             var User = app.models.User;
             User.create({
-                id: uuid.v4(),
-                token: uuid.v4()
+                key: uuid.v4(),
+                secret: uuid.v4()
             }, function (err, user) {
                 request(app)
-                    .get('/rainbow/' + user.id)
+                    .get('/rainbow/' + user.key)
                     .query({
                         signature: 'wrongSignature',
                         timestamp: givenTimestamp(),
@@ -48,14 +48,14 @@ describe('rainbow', function () {
             });
         });
 
-        it('should return 404 Not Found given invalid user id', function (done) {
+        it('should return 404 Not Found given invalid user key', function (done) {
             request(app)
-                .get('/rainbow/' + 'invalidUserId')
+                .get('/rainbow/' + 'invalidUserKey')
                 .expect(404, done);
         });
     });
 
-    describe('post /rainbow/:id', function () {
+    describe('post /rainbow/:key', function () {
         it('should handle request', function (done) {
             var User = app.models.User;
             var requestBody = "<xml>" +
@@ -75,13 +75,13 @@ describe('rainbow', function () {
                     "<FuncFlag>0</FuncFlag>" +
                     "</xml>";
             User.create({
-                id: uuid.v4(),
-                token: uuid.v4().replace(/-/g, '')
+                key: uuid.v4(),
+                secret: uuid.v4()
             }, function (err, user) {
                 request(app)
-                    .post('/rainbow/' + user.id)
+                    .post('/rainbow/' + user.key)
                     .query({
-                        signature: buildSignature(user.token, givenTimestamp(), givenNonce()),
+                        signature: buildSignature(user.secret, givenTimestamp(), givenNonce()),
                         timestamp: givenTimestamp(),
                         nonce: givenNonce()
                     })
@@ -108,11 +108,11 @@ describe('rainbow', function () {
                 "</xml>";
             var User = app.models.User;
             User.create({
-                id: uuid.v4(),
-                token: uuid.v4().replace(/-/g, '')
+                key: uuid.v4(),
+                secret: uuid.v4().replace(/-/g, '')
             }, function (err, user) {
                 request(app)
-                    .post('/rainbow/' + user.id)
+                    .post('/rainbow/' + user.key)
                     .query({
                         signature: 'wrongSignature',
                         timestamp: givenTimestamp(),
@@ -124,9 +124,9 @@ describe('rainbow', function () {
             });
         });
 
-        it('should return 404 Not Found given invalid user id', function (done) {
+        it('should return 404 Not Found given invalid user key', function (done) {
             request(app)
-                .post('/rainbow/' + 'invalidUserId')
+                .post('/rainbow/' + 'invalidUserKey')
                 .expect(404, done);
         });
 
@@ -144,9 +144,10 @@ describe('rainbow', function () {
         return 'echoMe';
     }
 
-    function buildSignature(token, timestamp, nonce) {
+    function buildSignature(secret, timestamp, nonce) {
         var crypto = require('crypto'),
             shasum = crypto.createHash('sha1'),
+            token = secret.replace('-', ''),
             array = [token, timestamp, nonce].sort();
         shasum.update(array[0]);
         shasum.update(array[1]);

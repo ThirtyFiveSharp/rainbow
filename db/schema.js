@@ -33,6 +33,6 @@ var Message = describe('Message', function() {
 });
 
 var User = describe('User', function () {
-    property('id', String, { index: true });
-    property('token', String);
+    property('key', String, { index: true });
+    property('secret', String);
 });
