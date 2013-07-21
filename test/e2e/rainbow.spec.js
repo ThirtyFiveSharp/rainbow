@@ -48,41 +48,14 @@ describe('rainbow', function () {
             });
         });
 
-        it('should return 404 Not Found when user of given id not exist', function (done) {
+        it('should return 404 Not Found given invalid user id', function (done) {
             request(app)
-                .get('/rainbow/' + uuid.v4())
+                .get('/rainbow/' + 'invalidUserId')
                 .expect(404, done);
         });
     });
 
     describe('post /rainbow/:id', function () {
-        it('should return 404 Not Found given incorrect signature', function (done) {
-            var requestBody = "<xml>" +
-                    "<ToUserName><![CDATA[server]]></ToUserName>" +
-                    "<FromUserName><![CDATA[client]]></FromUserName>" +
-                    "<CreateTime>1348831860</CreateTime>" +
-                    "<MsgType><![CDATA[text]]></MsgType>" +
-                    "<Content><![CDATA[this_is_a_test]]></Content>" +
-                    "<MsgId>1234567890123456</MsgId>" +
-                    "</xml>";
-            var User = app.models.User;
-            User.create({
-                id: uuid.v4(),
-                token: uuid.v4().replace(/-/g, '')
-            }, function (err, user) {
-                request(app)
-                    .post('/rainbow/' + user.id)
-                    .query({
-                        signature: 'wrongSignature',
-                        timestamp: givenTimestamp(),
-                        nonce: givenNonce()
-                    })
-                    .set('Content-Type', 'text/xml')
-                    .send(requestBody)
-                    .expect(404, done);
-            });
-        });
-
         it('should handle request', function (done) {
             var User = app.models.User;
             var requestBody = "<xml>" +
@@ -123,6 +96,40 @@ describe('rainbow', function () {
                     });
             });
         });
+
+        it('should return 404 Not Found given incorrect signature', function (done) {
+            var requestBody = "<xml>" +
+                "<ToUserName><![CDATA[server]]></ToUserName>" +
+                "<FromUserName><![CDATA[client]]></FromUserName>" +
+                "<CreateTime>1348831860</CreateTime>" +
+                "<MsgType><![CDATA[text]]></MsgType>" +
+                "<Content><![CDATA[this_is_a_test]]></Content>" +
+                "<MsgId>1234567890123456</MsgId>" +
+                "</xml>";
+            var User = app.models.User;
+            User.create({
+                id: uuid.v4(),
+                token: uuid.v4().replace(/-/g, '')
+            }, function (err, user) {
+                request(app)
+                    .post('/rainbow/' + user.id)
+                    .query({
+                        signature: 'wrongSignature',
+                        timestamp: givenTimestamp(),
+                        nonce: givenNonce()
+                    })
+                    .set('Content-Type', 'text/xml')
+                    .send(requestBody)
+                    .expect(404, done);
+            });
+        });
+
+        it('should return 404 Not Found given invalid user id', function (done) {
+            request(app)
+                .post('/rainbow/' + 'invalidUserId')
+                .expect(404, done);
+        });
+
     });
 
     function givenTimestamp() {
