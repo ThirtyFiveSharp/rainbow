@@ -13,7 +13,7 @@ describe('users', function () {
         it('should create user and return created user uri', function (done) {
             request(app)
                 .post('/users')
-                .expect('location', /\/users\/[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}/)
+                .expect('Location', /\/users\/[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}/)
                 .expect(201, done);
         });
     });

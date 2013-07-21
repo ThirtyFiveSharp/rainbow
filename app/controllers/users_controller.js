@@ -1,30 +1,29 @@
 load('application');
 
 action('show', function () {
-    User.all({where: {key: context.req.params.key}, limit: 1}, function (err, users) {
-        var user = users[0];
-        if(!user) {
-           return send(404);
-        }
-        context.res.header('Content-Type', 'application/json');
-        return send({
-            key: user.key,
-            secret: user.secret,
-            links: [
-                {rel: 'joinup', href: path_to.rainbow(user.key)}
-            ]
-        });
-    });
+    User.findByKey(context.req.params.key)
+        .then(function returnUserInfo(user) {
+            if (!user) {
+                send(404);
+                return;
+            }
+            context.res.header('Content-Type', 'application/json');
+            send({
+                key: user.key,
+                secret: user.secret,
+                links: [
+                    {rel: 'joinup', href: path_to.rainbow(user.key)}
+                ]
+            });
+        })
+        .done();
 });
 
 action('create', function () {
-    var uuid = require('node-uuid');
-    var user = {
-        key: uuid.v4(),
-        secret: uuid.v4()
-    };
-    User.create(user, function (err, user) {
-        context.res.header('location', path_to.user(user.key));
-        send(201);
-    });
+    User.createNew()
+        .then(function returnLinkOfCreatedUser (user) {
+            context.res.header('Location', path_to.user(user.key));
+            send(201);
+        })
+        .done();
 });
