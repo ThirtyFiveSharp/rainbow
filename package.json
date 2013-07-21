@@ -26,7 +26,8 @@
     "node-uuid": "*",
     "xml2js": "*",
     "jugglingdb-mongodb": "0.0.4-3",
-    "q": "~0.9.6"
+    "q": "~0.9.6",
+    "underscore": "~1.5.1"
   },
   "devDependencies": {
     "nodeunit": "*",
