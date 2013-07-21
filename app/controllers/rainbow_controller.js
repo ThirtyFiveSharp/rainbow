@@ -63,18 +63,7 @@ function buildResponseMessageForWeChat(user) {
             createTime: fromWeChatTime(xml.CreateTime[0])
         };
     return generateResponseMessage(receivedMessage)
-        .then(function createResponseMessage(responseMessage) {
-            var responseBody = {
-                    to: responseMessage.receiver,
-                    from: responseMessage.sender,
-                    createTime: toWeChatTime(responseMessage.createTime),
-                    type: 'text',
-                    content: responseMessage.content,
-                    flag: 0
-                };
-            context.res.header('Content-Type', 'text/xml');
-            render(responseBody);
-        });
+        .then(returnResponseMessage);
 }
 
 function generateResponseMessage(receivedMessage) {
@@ -91,6 +80,19 @@ function generateResponseMessage(receivedMessage) {
             };
             return Message.createNew(responseMessage);
         });
+}
+
+function returnResponseMessage(responseMessage) {
+    var responseBody = {
+        to: responseMessage.receiver,
+        from: responseMessage.sender,
+        createTime: toWeChatTime(responseMessage.createTime),
+        type: 'text',
+        content: responseMessage.content,
+        flag: 0
+    };
+    context.res.header('Content-Type', 'text/xml');
+    render(responseBody);
 }
 
 function toWeChatTime(date) {
