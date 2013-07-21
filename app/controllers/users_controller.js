@@ -3,7 +3,6 @@ load('application');
 action('show', function () {
     User.all({where: {key: context.req.params.key}, limit: 1}, function (err, users) {
         var user = users[0];
-        console.log("user=", user);
         if(!user) {
            return send(404);
         }
