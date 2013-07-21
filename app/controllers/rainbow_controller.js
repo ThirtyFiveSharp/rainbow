@@ -54,31 +54,38 @@ function return404NotFound() {
 
 function buildResponseMessage(user, xml) {
     var sender = xml.FromUserName[0],
-        receiver = xml.ToUserName[0],
-        responseBody = {
-            to: sender,
-            from: receiver,
-            createTime: xml.CreateTime[0],
-            type: 'text',
-            content: xml.Content[0],
-            flag: 0
-        },
-        receivedMessage = {
-            userId: user.id,
-            sender: sender,
-            receiver: receiver,
-            rawContent: xml
-        },
-        repliedMessage = {
-            userId: user.id,
-            sender: receiver,
-            receiver: sender,
-            rawContent: responseBody
-        };
-    context.res.header('Content-Type', 'text/xml');
-    render(responseBody);
-    return q.all(
-        Message.createNew(receivedMessage),
-        Message.createNew(repliedMessage)
-    );
+        receiver = xml.ToUserName[0];
+    return Message.countBySender(sender, user.id)
+        .then(function(numberOfReceivedMessages) {
+            var responseBody = {
+                    to: sender,
+                    from: receiver,
+                    createTime: xml.CreateTime[0],
+                    type: 'text',
+                    content: buildResponseContent(xml.Content[0], numberOfReceivedMessages),
+                    flag: 0
+                },
+                receivedMessage = {
+                    userId: user.id,
+                    sender: sender,
+                    receiver: receiver,
+                    rawContent: xml
+                },
+                repliedMessage = {
+                    userId: user.id,
+                    sender: receiver,
+                    receiver: sender,
+                    rawContent: responseBody
+                };
+            context.res.header('Content-Type', 'text/xml');
+            render(responseBody);
+            return q.all(
+                Message.createNew(receivedMessage),
+                Message.createNew(repliedMessage)
+            );
+        });
+}
+
+function buildResponseContent(originalContent, numberOfReceivedMessages) {
+    return originalContent + ' [You have sent '+ (numberOfReceivedMessages+1) + ' message(s).]';
 }

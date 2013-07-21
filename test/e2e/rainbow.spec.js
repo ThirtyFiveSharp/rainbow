@@ -1,5 +1,7 @@
 describe('rainbow', function () {
-    var request = require('supertest'), uuid = require('node-uuid'),
+    var request = require('supertest'),
+        uuid = require('node-uuid'),
+        xml2js = require('xml2js'),
         app, compound;
 
     beforeEach(function (done) {
@@ -56,24 +58,17 @@ describe('rainbow', function () {
     });
 
     describe('post /rainbow/:key', function () {
-        it('should handle request', function (done) {
+        it('should reply with original message content and statistics of user activities', function (done) {
             var User = app.models.User;
             var requestBody = "<xml>" +
                     "<ToUserName><![CDATA[server]]></ToUserName>" +
                     "<FromUserName><![CDATA[client]]></FromUserName>" +
                     "<CreateTime>1348831860</CreateTime>" +
                     "<MsgType><![CDATA[text]]></MsgType>" +
-                    "<Content><![CDATA[this_is_a_test]]></Content>" +
+                    "<Content><![CDATA[this is a test]]></Content>" +
                     "<MsgId>1234567890123456</MsgId>" +
                     "</xml>",
-                expectedResponseBody = "<xml>" +
-                    "<ToUserName><![CDATA[client]]></ToUserName>" +
-                    "<FromUserName><![CDATA[server]]></FromUserName>" +
-                    "<CreateTime>1348831860</CreateTime>" +
-                    "<MsgType><![CDATA[text]]></MsgType>" +
-                    "<Content><![CDATA[this_is_a_test]]></Content>" +
-                    "<FuncFlag>0</FuncFlag>" +
-                    "</xml>";
+                expectedContent = "this is a test [You have sent 1 message(s).]";
             User.create({
                 key: uuid.v4(),
                 secret: uuid.v4()
@@ -90,14 +85,21 @@ describe('rainbow', function () {
                     .expect('Content-Type', 'text/xml')
                     .expect(200)
                     .end(function(err, res) {
-                        if(err) throw err;
-                        res.text.replace(/\s*/g, '').should.equal(expectedResponseBody);
-                        done();
+                        var parser = new xml2js.Parser();
+                        parser.parseString(res.text, function(err, responseBody) {
+                            responseBody.xml.ToUserName[0].should.equal('client');
+                            responseBody.xml.FromUserName[0].should.equal('server');
+                            responseBody.xml.CreateTime[0].should.equal('1348831860');
+                            responseBody.xml.MsgType[0].should.equal('text');
+                            responseBody.xml.Content[0].should.equal(expectedContent);
+                            responseBody.xml.FuncFlag[0].should.equal('0');
+                            done();
+                        });
                     });
             });
         });
 
-        it('should save the messages that has been received and replied', function (done) {
+        it('should save the messages that have been received and replied', function (done) {
             var User = app.models.User,
                 Message = app.models.Message,
                 requestBody = "<xml>" +
