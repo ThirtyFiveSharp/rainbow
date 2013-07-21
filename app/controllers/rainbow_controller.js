@@ -2,25 +2,33 @@ load('application');
 
 action('joinup', function () {
     User.find(context.req.params.id, function (err, user) {
-        if (!user) {
-            return send(404);
-        }
         var query = context.req.query,
             signature = query.signature,
+            token = user && user.token,
             timestamp = query.timestamp,
             nonce = query.nonce,
             echoStr = query.echostr;
-        var expectedSignature = createSha1Content(user.token, timestamp, nonce);
-        if (signature == expectedSignature) {
-            send(echoStr);
-        } else {
-            send(400);
+
+        if (!user || !isSignatureValid(signature, token, timestamp, nonce)) {
+            send(404);
+            return;
         }
+        send(echoStr);
     });
 });
 
 action('process', function () {
     User.find(context.req.params.id, function (err, user) {
+        var query = context.req.query,
+            signature = query.signature,
+            token = user && user.token,
+            timestamp = query.timestamp,
+            nonce = query.nonce;
+        if (!user || !isSignatureValid(signature, token, timestamp, nonce)) {
+            send(404);
+            return;
+        }
+
         var reqBody = req.body.xml;
         var result = {
             to: reqBody.FromUserName[0],
@@ -35,11 +43,14 @@ action('process', function () {
     });
 });
 
-function createSha1Content(token, timestamp, nonce) {
+function isSignatureValid(signature, token, timestamp, nonce) {
+    return buildSignature(token, timestamp, nonce) === signature;
+}
+
+function buildSignature(token, timestamp, nonce) {
     var crypto = require('crypto'),
-        shasum = crypto.createHash('sha1');
-    var array = [token, timestamp, nonce];
-    array.sort();
+        shasum = crypto.createHash('sha1'),
+        array = [token, timestamp, nonce].sort();
     shasum.update(array[0]);
     shasum.update(array[1]);
     shasum.update(array[2]);

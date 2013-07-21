@@ -1,5 +1,6 @@
 describe('rainbow', function () {
-    var request = require('supertest'), app, compound;
+    var request = require('supertest'), uuid = require('node-uuid'),
+        app, compound;
 
     beforeEach(function (done) {
         app = getApp();
@@ -10,12 +11,6 @@ describe('rainbow', function () {
     });
 
     describe('get /rainbow/:id', function () {
-        var uuid = require('node-uuid'),
-            timestamp = 'timestamp',
-            token = 'token',
-            nonce = 'nonce',
-            echoStr = uuid.v4();
-
         it('should verify request and send back echostr given correct signature', function (done) {
             var User = app.models.User;
             User.create({
@@ -25,17 +20,17 @@ describe('rainbow', function () {
                 request(app)
                     .get('/rainbow/' + user.id)
                     .query({
-                        signature: createSha1Content(user.token, timestamp, nonce),
-                        timestamp: timestamp,
-                        nonce: nonce,
-                        echostr: echoStr
+                        signature: buildSignature(user.token, givenTimestamp(), givenNonce()),
+                        timestamp: givenTimestamp(),
+                        nonce: givenNonce(),
+                        echostr: givenEchoStr()
                     })
-                    .expect(200, echoStr, done);
+                    .expect(200, givenEchoStr(), done);
             });
 
         });
 
-        it('should return 400 Bad Request given incorrect signature', function (done) {
+        it('should return 404 Not Found given incorrect signature', function (done) {
             var User = app.models.User;
             User.create({
                 id: uuid.v4(),
@@ -44,12 +39,12 @@ describe('rainbow', function () {
                 request(app)
                     .get('/rainbow/' + user.id)
                     .query({
-                        signature: 'any',
-                        timestamp: timestamp,
-                        nonce: nonce,
-                        echostr: echoStr
+                        signature: 'wrongSignature',
+                        timestamp: givenTimestamp(),
+                        nonce: givenNonce(),
+                        echostr: givenEchoStr()
                     })
-                    .expect(400, done);
+                    .expect(404, done);
             });
         });
 
@@ -58,22 +53,37 @@ describe('rainbow', function () {
                 .get('/rainbow/' + uuid.v4())
                 .expect(404, done);
         });
-
-        function createSha1Content(token, timestamp, nonce) {
-            var crypto = require('crypto'),
-                shasum = crypto.createHash('sha1');
-            var array = [token, timestamp, nonce];
-            array.sort();
-            shasum.update(array[0]);
-            shasum.update(array[1]);
-            shasum.update(array[2]);
-            return shasum.digest('hex');
-        }
     });
 
     describe('post /rainbow/:id', function () {
+        it('should return 404 Not Found given incorrect signature', function (done) {
+            var requestBody = "<xml>" +
+                    "<ToUserName><![CDATA[server]]></ToUserName>" +
+                    "<FromUserName><![CDATA[client]]></FromUserName>" +
+                    "<CreateTime>1348831860</CreateTime>" +
+                    "<MsgType><![CDATA[text]]></MsgType>" +
+                    "<Content><![CDATA[this_is_a_test]]></Content>" +
+                    "<MsgId>1234567890123456</MsgId>" +
+                    "</xml>";
+            var User = app.models.User;
+            User.create({
+                id: uuid.v4(),
+                token: uuid.v4().replace(/-/g, '')
+            }, function (err, user) {
+                request(app)
+                    .post('/rainbow/' + user.id)
+                    .query({
+                        signature: 'wrongSignature',
+                        timestamp: givenTimestamp(),
+                        nonce: givenNonce()
+                    })
+                    .set('Content-Type', 'text/xml')
+                    .send(requestBody)
+                    .expect(404, done);
+            });
+        });
+
         it('should handle request', function (done) {
-            var uuid = require('node-uuid');
             var User = app.models.User;
             var requestBody = "<xml>" +
                     "<ToUserName><![CDATA[server]]></ToUserName>" +
@@ -97,6 +107,11 @@ describe('rainbow', function () {
             }, function (err, user) {
                 request(app)
                     .post('/rainbow/' + user.id)
+                    .query({
+                        signature: buildSignature(user.token, givenTimestamp(), givenNonce()),
+                        timestamp: givenTimestamp(),
+                        nonce: givenNonce()
+                    })
                     .set('Content-Type', 'text/xml')
                     .send(requestBody)
                     .expect('Content-Type', 'text/xml')
@@ -109,4 +124,26 @@ describe('rainbow', function () {
             });
         });
     });
+
+    function givenTimestamp() {
+        return 'timestamp';
+    }
+
+    function givenNonce() {
+        return 'nonce';
+    }
+
+    function givenEchoStr() {
+        return 'echoMe';
+    }
+
+    function buildSignature(token, timestamp, nonce) {
+        var crypto = require('crypto'),
+            shasum = crypto.createHash('sha1'),
+            array = [token, timestamp, nonce].sort();
+        shasum.update(array[0]);
+        shasum.update(array[1]);
+        shasum.update(array[2]);
+        return shasum.digest('hex');
+    }
 });
