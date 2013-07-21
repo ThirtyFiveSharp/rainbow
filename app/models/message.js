@@ -1,9 +1,12 @@
-var q = require('q');
+var q = require('q'),
+    _ = require('underscore');
 
 module.exports = function (compound, Message) {
     Message.createNew = function createNew(spec) {
-        var deferred = q.defer();
-        Message.create(spec, function (err, message) {
+        var deferred = q.defer(),
+            defaults = {createTime: new Date()},
+            data = _.extend(defaults, spec);
+        Message.create(data, function (err, message) {
             if(err) deferred.reject(err);
             else deferred.resolve(message);
         });

@@ -59,16 +59,17 @@ describe('rainbow', function () {
 
     describe('post /rainbow/:key', function () {
         it('should reply with original message content and statistics of user activities', function (done) {
-            var User = app.models.User;
-            var requestBody = "<xml>" +
+            var startTime = new Date(),
+                requestBody = "<xml>" +
                     "<ToUserName><![CDATA[server]]></ToUserName>" +
                     "<FromUserName><![CDATA[client]]></FromUserName>" +
-                    "<CreateTime>1348831860</CreateTime>" +
+                    "<CreateTime>" + toWeChatTime(startTime) + "</CreateTime>" +
                     "<MsgType><![CDATA[text]]></MsgType>" +
                     "<Content><![CDATA[this is a test]]></Content>" +
                     "<MsgId>1234567890123456</MsgId>" +
                     "</xml>",
                 expectedContent = "this is a test [You have sent 1 message(s).]";
+            var User = app.models.User;
             User.create({
                 key: uuid.v4(),
                 secret: uuid.v4()
@@ -89,7 +90,7 @@ describe('rainbow', function () {
                         parser.parseString(res.text, function(err, responseBody) {
                             responseBody.xml.ToUserName[0].should.equal('client');
                             responseBody.xml.FromUserName[0].should.equal('server');
-                            responseBody.xml.CreateTime[0].should.equal('1348831860');
+                            responseBody.xml.CreateTime[0].should.be.within(toWeChatTime(startTime), toWeChatTime(new Date()));
                             responseBody.xml.MsgType[0].should.equal('text');
                             responseBody.xml.Content[0].should.equal(expectedContent);
                             responseBody.xml.FuncFlag[0].should.equal('0');
@@ -105,7 +106,7 @@ describe('rainbow', function () {
                 requestBody = "<xml>" +
                     "<ToUserName><![CDATA[server]]></ToUserName>" +
                     "<FromUserName><![CDATA[client]]></FromUserName>" +
-                    "<CreateTime>1348831860</CreateTime>" +
+                    "<CreateTime>" + toWeChatTime(new Date()) + "</CreateTime>" +
                     "<MsgType><![CDATA[text]]></MsgType>" +
                     "<Content><![CDATA[messageFromClient]]></Content>" +
                     "<MsgId>1234567890123456</MsgId>" +
@@ -136,7 +137,7 @@ describe('rainbow', function () {
             var requestBody = "<xml>" +
                 "<ToUserName><![CDATA[server]]></ToUserName>" +
                 "<FromUserName><![CDATA[client]]></FromUserName>" +
-                "<CreateTime>1348831860</CreateTime>" +
+                "<CreateTime>" + toWeChatTime(new Date()) + "</CreateTime>" +
                 "<MsgType><![CDATA[text]]></MsgType>" +
                 "<Content><![CDATA[this_is_a_test]]></Content>" +
                 "<MsgId>1234567890123456</MsgId>" +
@@ -188,5 +189,9 @@ describe('rainbow', function () {
         shasum.update(array[1]);
         shasum.update(array[2]);
         return shasum.digest('hex');
+    }
+
+    function toWeChatTime(date) {
+        return Math.floor(date.getTime() / 1000);
     }
 });

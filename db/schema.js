@@ -26,6 +26,7 @@ var Message = describe('Message', function() {
     property('sender', String);
     property('receiver', String);
     property('content', String);
+    property('createTime', Date);
 });
 
 var User = describe('User', function () {

@@ -59,34 +59,44 @@ function buildResponseMessageForWeChat(user) {
             userId: user.id,
             sender: sender,
             receiver: receiver,
-            content: xml.Content[0]
+            content: xml.Content[0],
+            createTime: fromWeChatTime(xml.CreateTime[0])
         };
-    return Message.createNew(receivedMessage)
-        .then(generateResponseContent)
-        .then(function createResponseMessage(responseContent) {
+    return generateResponseMessage(receivedMessage)
+        .then(function createResponseMessage(responseMessage) {
             var responseBody = {
-                    to: sender,
-                    from: receiver,
-                    createTime: xml.CreateTime[0],
+                    to: responseMessage.receiver,
+                    from: responseMessage.sender,
+                    createTime: toWeChatTime(responseMessage.createTime),
                     type: 'text',
-                    content: responseContent,
+                    content: responseMessage.content,
                     flag: 0
-                },
-                responseMessage = {
-                    userId: user.id,
-                    sender: receiver,
-                    receiver: sender,
-                    content: responseContent
                 };
             context.res.header('Content-Type', 'text/xml');
             render(responseBody);
+        });
+}
+
+function generateResponseMessage(receivedMessage) {
+    return Message.createNew(receivedMessage)
+        .then(function getStatisticsOfUserActivities() {
+            return Message.countBySender(receivedMessage.sender, receivedMessage.userId);
+        })
+        .then(function createResponseMessage(count) {
+            var responseMessage = {
+                userId: receivedMessage.userId,
+                sender: receivedMessage.receiver,
+                receiver: receivedMessage.sender,
+                content: receivedMessage.content + ' [You have sent ' + count + ' message(s).]'
+            };
             return Message.createNew(responseMessage);
         });
 }
 
-function generateResponseContent(receivedMessage) {
-    return Message.countBySender(receivedMessage.sender, receivedMessage.userId)
-        .then(function appendStatisticsInfo(count) {
-            return receivedMessage.content + ' [You have sent '+ count + ' message(s).]';
-        });
+function toWeChatTime(date) {
+    return Math.floor(date.getTime() / 1000);
+}
+
+function fromWeChatTime(timestamp) {
+    return new Date(parseInt(timestamp, 10) * 1000);
 }
